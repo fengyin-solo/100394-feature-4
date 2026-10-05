@@ -3,7 +3,7 @@
     <header class="page-head">
       <div>
         <h2>巡查排查管理</h2>
-        <p class="page-desc">维护巡查记录，围绕巡查编号、隐患点编号、巡查日期、巡查人员做登记、筛选与状态流转。</p>
+        <p class="page-desc">维护巡查记录，围绕巡查编号、隐患点编号、巡查日期、巡查人员做登记、筛选与状态流转；裂缝测点确认修复后自动追加销号复查任务。</p>
       </div>
       <div class="page-actions">
         <button class="btn primary" type="button" @click="openCreate">登记巡查记录</button>
@@ -29,6 +29,10 @@
         <span>{{ field }}</span>
         <input v-model="filters[field]" :placeholder="`按${field}检索`" />
       </label>
+      <label class="filter-item">
+        <span>任务类型</span>
+        <input v-model="filters['任务类型']" placeholder="如：销号复查" />
+      </label>
       <button class="btn" type="submit">查询</button>
       <button class="btn ghost" type="button" @click="resetFilters">重置条件</button>
     </form>
@@ -42,8 +46,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="String(row.id)">
-          <td v-for="column in columns" :key="column">{{ row[column] ?? '—' }}</td>
+        <tr v-for="row in rows" :key="String(row.id)" :class="{ 'review-row': isReviewTask(row) }">
+          <td v-for="column in columns" :key="column">
+            <template v-if="column === '任务类型'">
+              <span class="task-tag" :class="isReviewTask(row) ? 'tag-review' : 'tag-routine'">{{ taskKind(row) }}</span>
+            </template>
+            <template v-else-if="column === '关联测点'">
+              {{ row[column] ?? '—' }}
+            </template>
+            <template v-else>{{ row[column] ?? '—' }}</template>
+          </td>
           <td>{{ row.status }}</td>
           <td class="row-actions">
             <button
@@ -82,22 +94,39 @@ import {
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('patrol')
-const columns = ["巡查编号", "隐患点编号", "巡查日期", "巡查人员", "巡查范围", "发现异常", "处置措施", "巡查状态"]
+const columns = ["巡查编号", "隐患点编号", "巡查日期", "巡查人员", "巡查范围", "任务类型", "关联测点", "发现异常", "处置措施", "巡查状态"]
 const actions = ["完成巡查", "报告异常", "确认处置"]
 const statuses = ["待巡查", "已巡查", "发现异常", "已处置"]
-const stats = [{"label": "本月巡查次数", "value": 0}, {"label": "发现异常数", "value": 0}, {"label": "待处置数", "value": 0}]
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
 const errorMessage = ref('')
 const filters = ref<Record<string, string>>({})
 const filterFields = columns.slice(0, 3)
+
+const stats = computed(() => [
+  { label: "本月巡查次数", value: rows.value.length },
+  { label: "发现异常数", value: rows.value.filter((row) => String(row.status) === '发现异常').length },
+  {
+    label: "销号复查待办",
+    value: rows.value.filter((row) => isReviewTask(row) && String(row.status) !== '已处置').length,
+  },
+])
+
 const statusSummary = computed(() =>
   statuses.map((status: string) => ({
     status,
     count: rows.value.filter((row) => String(row.status) === status).length,
   })),
 )
+
+function isReviewTask(row: EntryRow): boolean {
+  return String(row['任务类型'] ?? '') === '销号复查'
+}
+
+function taskKind(row: EntryRow): string {
+  return isReviewTask(row) ? '销号复查' : '日常巡查'
+}
 
 function resetFilters() {
   filters.value = {}
@@ -119,6 +148,7 @@ function runAction(action: string, row: EntryRow) {
     errorMessage.value = result.message
     return
   }
+  errorMessage.value = isReviewTask(row) ? `${result.message}，裂缝测点随后可执行销号复核` : result.message
   reload()
 }
 
