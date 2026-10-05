@@ -97,13 +97,30 @@ export const SEED_ROWS: Record<string, EntryRow[]> = {
       "pending": true,
       "abnormal": false,
       "测点编号": "CRAC-0001",
-      "隐患点编号": "CRAC-0001",
-      "裂缝编号": "CRAC-0001",
-      "初始宽度": "裂缝监测样例1",
-      "当前宽度": "裂缝监测样例1",
-      "变化速率": "裂缝监测样例1",
-      "监测人": "裂缝监测样例1",
-      "测点状态": "裂缝监测样例1"
+      "隐患点编号": "HAZA-0001",
+      "裂缝编号": "FRAC-01",
+      "初始宽度": 1.2,
+      "当前宽度": 1.3,
+      "变化速率": 0.05,
+      "监测人": "周文斌",
+      "测点状态": "正常",
+      "clock": {
+        "firstAbnormalAt": null,
+        "lastObservedAt": "2026-10-04T09:20",
+        "talkRepairAt": null,
+        "recheck": "none",
+        "recheckRequestedAt": null,
+        "recheckCompletedAt": null,
+        "recheckTrigger": null,
+        "repairedConfirmedAt": null,
+        "stableConfirmed": false,
+        "stableConfirmedAt": null,
+        "extras": [],
+        "history": [
+          {"at": "2026-09-20T09:00", "width": 1.2, "rate": 0.0, "operator": "周文斌"},
+          {"at": "2026-10-04T09:20", "width": 1.3, "rate": 0.05, "operator": "周文斌"}
+        ]
+      }
     },
     {
       "id": 2,
@@ -111,27 +128,98 @@ export const SEED_ROWS: Record<string, EntryRow[]> = {
       "pending": true,
       "abnormal": true,
       "测点编号": "CRAC-0002",
-      "隐患点编号": "CRAC-0002",
-      "裂缝编号": "CRAC-0002",
-      "初始宽度": "裂缝监测样例2",
-      "当前宽度": "裂缝监测样例2",
-      "变化速率": "裂缝监测样例2",
-      "监测人": "裂缝监测样例2",
-      "测点状态": "裂缝监测样例2"
+      "隐患点编号": "HAZA-0002",
+      "裂缝编号": "FRAC-02",
+      "初始宽度": 2.0,
+      "当前宽度": 6.4,
+      "变化速率": 0.62,
+      "监测人": "李秀兰",
+      "测点状态": "加速发展",
+      "clock": {
+        "firstAbnormalAt": "2026-09-28T15:10",
+        "lastObservedAt": "2026-10-04T16:40",
+        "talkRepairAt": null,
+        "recheck": "pending",
+        "recheckRequestedAt": "2026-10-04T16:40",
+        "recheckCompletedAt": null,
+        "recheckTrigger": "rate",
+        "repairedConfirmedAt": null,
+        "stableConfirmed": false,
+        "stableConfirmedAt": null,
+        "extras": [
+          {"id": 1, "scheduledAt": "2026-10-06T09:00", "reason": "雨后加密观测", "status": "已安排", "createdAt": "2026-10-04T17:00"}
+        ],
+        "history": [
+          {"at": "2026-09-20T09:30", "width": 2.0, "rate": 0.02, "operator": "李秀兰"},
+          {"at": "2026-09-28T15:10", "width": 3.1, "rate": 0.28, "operator": "李秀兰"},
+          {"at": "2026-10-04T16:40", "width": 6.4, "rate": 0.62, "operator": "李秀兰"}
+        ]
+      }
     },
     {
+      // 旧测点：登记时没量到初始宽度，初始宽度保留为空，增量类判据不参与。
       "id": 3,
       "status": "趋于稳定",
-      "pending": false,
+      "pending": true,
       "abnormal": false,
       "测点编号": "CRAC-0003",
-      "隐患点编号": "CRAC-0003",
-      "裂缝编号": "CRAC-0003",
-      "初始宽度": "裂缝监测样例3",
-      "当前宽度": "裂缝监测样例3",
-      "变化速率": "裂缝监测样例3",
-      "监测人": "裂缝监测样例3",
-      "测点状态": "裂缝监测样例3"
+      "隐患点编号": "HAZA-0002",
+      "裂缝编号": "FRAC-03",
+      "初始宽度": "",
+      "当前宽度": 4.1,
+      "变化速率": 0.08,
+      "监测人": "周文斌",
+      "测点状态": "趋于稳定",
+      "clock": {
+        "firstAbnormalAt": "2026-09-12T10:05",
+        "lastObservedAt": "2026-10-03T11:00",
+        "talkRepairAt": "2026-09-20T14:30",
+        "recheck": "done",
+        "recheckRequestedAt": "2026-09-21T09:00",
+        "recheckCompletedAt": "2026-09-25T10:00",
+        "recheckTrigger": "rate",
+        "repairedConfirmedAt": null,
+        "stableConfirmed": true,
+        "stableConfirmedAt": "2026-10-02T15:20",
+        "extras": [],
+        "history": [
+          {"at": "2026-09-12T10:05", "width": 3.6, "rate": 0.55, "operator": "周文斌"},
+          {"at": "2026-09-25T10:00", "width": 4.0, "rate": 0.12, "operator": "李秀兰"},
+          {"at": "2026-10-03T11:00", "width": 4.1, "rate": 0.08, "operator": "周文斌"}
+        ]
+      }
+    },
+    {
+      // 宽度与速率矛盾样例：绝对宽度已到关注值，但速率平稳；按速率优先规则不触发复核。
+      "id": 4,
+      "status": "正常",
+      "pending": true,
+      "abnormal": false,
+      "测点编号": "CRAC-0004",
+      "隐患点编号": "HAZA-0001",
+      "裂缝编号": "FRAC-04",
+      "初始宽度": 5.2,
+      "当前宽度": 5.9,
+      "变化速率": 0.1,
+      "监测人": "李秀兰",
+      "测点状态": "正常",
+      "clock": {
+        "firstAbnormalAt": null,
+        "lastObservedAt": "2026-10-04T08:50",
+        "talkRepairAt": null,
+        "recheck": "none",
+        "recheckRequestedAt": null,
+        "recheckCompletedAt": null,
+        "recheckTrigger": null,
+        "repairedConfirmedAt": null,
+        "stableConfirmed": false,
+        "stableConfirmedAt": null,
+        "extras": [],
+        "history": [
+          {"at": "2026-09-19T08:30", "width": 5.2, "rate": 0.0, "operator": "李秀兰"},
+          {"at": "2026-10-04T08:50", "width": 5.9, "rate": 0.1, "operator": "李秀兰"}
+        ]
+      }
     }
   ],
   "tilt": [
